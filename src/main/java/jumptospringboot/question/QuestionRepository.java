@@ -1,4 +1,4 @@
-package jumptospringboot;
+package jumptospringboot.question;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

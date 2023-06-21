@@ -1,9 +1,13 @@
+import jakarta.transaction.Transactional;
 import jumptospringboot.*;
+import jumptospringboot.answer.Answer;
+import jumptospringboot.answer.AnswerRepository;
+import jumptospringboot.question.Question;
+import jumptospringboot.question.QuestionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class JumpToSpringbootApplicationTests {
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
 //    @Test 테스트 데이터베이스에 값을 만들어 넣음
 //    void testJpa() {
@@ -93,21 +100,67 @@ class JumpToSpringbootApplicationTests {
 //        assertEquals(1, this.questionRepository.count());
 //    }
 
-    // 답변 데이터 생성 후 저장하기
-    @Autowired
-    // 답변 데이터 처리를 위해서는 답변 리포지터리가 필요하므로 AnswerRepository 객체를 주입
-    private AnswerRepository answerRepository;
+//    @Test
+//    void testJpa(){
+//        Optional<Question> oq = this.questionRepository.findById(2);
+//        assertTrue(oq.isPresent());
+//        Question q = oq.get();
+//
+//        Answer a = new Answer();
+//        a.setContent("네 자동으로 생성됩니다.");
+//        a.setQuestion(q); // 어떤 질문의 답변인지 알기 위해서 Question의 객체가 필요
+//        a.setCreateDate(LocalDateTime.now());
+//        this.answerRepository.save(a);
+//    }
 
+//    @Test
+//    void testJpa() { // 데이터의 삭제
+//        assertEquals(2, this.questionRepository.count());
+//        Optional<Question> oq = this.questionRepository.findById(1);
+//        assertTrue(oq.isPresent());
+//        Question q = oq.get();
+//        this.questionRepository.delete(q);
+//        assertEquals(1, this.questionRepository.count());
+//    }
+
+//    @Test
+//    void testJpa() { // 답변(Answer) 데이터를 생성하고 저장
+//        Optional<Question> oq = this.questionRepository.findById(2);
+//        assertTrue(oq.isPresent());
+//        Question q = oq.get();
+//
+//        Answer a = new Answer();
+//        a.setContent("네 자동으로 생성됩니다.");
+//        a.setQuestion(q); // 어떤 질문의 답변인지 알기 위해서 Question 객체가 필요하다
+//        a.setCreateDate(LocalDateTime.now());
+//        this.answerRepository.save(a);
+//    }
+
+//    @Test
+//    void testJpa() { // Answer 엔티티의 question 속성을 이용하여 답변 조회하기. 즉, 답변에 연결된 질문 찾기
+//        // id 값이 1인 답변을 조회하고, 해당 답변의 질문 id가 2인지 확인
+//        Optional<Answer> oa = this.answerRepository.findById(1);
+//        assertTrue(oa.isPresent());
+//        Answer a = oa.get();
+//        assertEquals(2, a.getQuestion().getId());
+//    }
+
+    @Transactional
     @Test
-    void testJpa(){
+    // 테스트모드에서 실행하면 오류가 발생하는데, 이유는 다음과 같다
+    // Question 리포지터리에서 findById를 호출하여 Question 객체를 조회하고 나면 DB 세션이 끊어지기 때문
+    // 때문에 그 이후 실행되는 q.getAnswerList() 메서드는 세션이 종료되어 오류가 발생
+    // 이 문제는 테스트 코드에서만 발생하며, 실제 서버에서는 DB 세션이 종료되지 않기 때문에 문제 없이 코드가 처리된다.
+    // 테스트에서 상기한 문제는 @Transactional 어노테이션을 추가하는 것으로 해결이 가능
+    void testJpa() { // 질문에서 답변 찾기
+        // id가 2인 질문을 취득
         Optional<Question> oq = this.questionRepository.findById(2);
         assertTrue(oq.isPresent());
         Question q = oq.get();
 
-        Answer a = new Answer();
-        a.setContent("네 자동으로 생성됩니다.");
-        a.setQuestion(q); // 어떤 질문의 답변인지 알기 위해서 Question의 객체가 필요
-        a.setCreateDate(LocalDateTime.now());
-        this.answerRepository.save(a);
+        List<Answer> answerList = q.getAnswerList();
+
+        assertEquals(1, answerList.size());
+        assertEquals("네 자동으로 생성됩니다.", answerList.get(0).getContent());
     }
 }

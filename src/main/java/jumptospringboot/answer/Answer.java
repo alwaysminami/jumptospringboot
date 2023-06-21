@@ -1,6 +1,7 @@
-package jumptospringboot;
+package jumptospringboot.answer;
 
 import jakarta.persistence.*;
+import jumptospringboot.question.Question;
 import lombok.Getter;
 import lombok.Setter;
 
